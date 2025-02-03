@@ -15,52 +15,37 @@ Button.Position = UDim2.new(0.5, -100, 0.9, -25)
 Button.Text = "Soco"
 Button.Parent = ScreenGui
 
--- Função para dar um soco
-local function punch()
-    -- Criar uma "onda" de dano em frente ao personagem (simulando um soco)
-    local punchRange = 10  -- Distância do soco
-    local damage = 10000  -- Dano do soco
+-- Função para matar NPCs no raio de 3 metros
+local function killNPCsInRange()
+    local punchRange = 3  -- Raio de 3 metros
+    local damage = 10000  -- Dano suficiente para matar NPCs
 
-    -- Definir a direção e a posição do soco
+    -- Definir a posição central do personagem
     local startPosition = Character.HumanoidRootPart.Position
-    local direction = Character.HumanoidRootPart.CFrame.LookVector
-    local endPosition = startPosition + direction * punchRange
 
-    -- Criar uma parte invisível para simular o soco (pode ser uma esfera ou uma "linha")
-    local punchPart = Instance.new("Part")
-    punchPart.Size = Vector3.new(1, 1, punchRange)  -- Tamanho da "onda" do soco
-    punchPart.Position = startPosition + direction * (punchRange / 2)
-    punchPart.Anchored = true
-    punchPart.CanCollide = false
-    punchPart.Transparency = 1  -- Torna invisível
-    punchPart.Parent = workspace
-
-    -- Detectar objetos dentro do alcance do soco
+    -- Encontra todas as partes dentro do raio de 3 metros
     local hitObjects = workspace:FindPartsInRegion3(
-        punchPart.Position - Vector3.new(punchRange / 2, punchRange / 2, punchRange / 2),
-        punchPart.Position + Vector3.new(punchRange / 2, punchRange / 2, punchRange / 2),
+        startPosition - Vector3.new(punchRange / 2, punchRange / 2, punchRange / 2),
+        startPosition + Vector3.new(punchRange / 2, punchRange / 2, punchRange / 2),
         nil
     )
 
-    -- Aplicar dano aos inimigos no alcance
+    -- Para cada parte detectada, verificamos se é um NPC
     for _, part in pairs(hitObjects) do
         local enemy = part.Parent
         if enemy and enemy:FindFirstChild("Humanoid") then
             local humanoid = enemy:FindFirstChild("Humanoid")
             if humanoid then
-                humanoid:TakeDamage(damage)  -- Causa dano suficiente para matar o inimigo
+                humanoid.Health = 0  -- Mata o NPC independentemente da vida
             end
         end
     end
 
-    -- Remove a parte invisível após o soco
-    punchPart:Destroy()
-
-    print("Soco dado com dano de " .. damage)
+    print("Todos os NPCs no raio de " .. punchRange .. " metros foram mortos!")
 end
 
--- Função para ativar o soco ao clicar no botão
+-- Função para ativar a ação ao clicar no botão
 Button.MouseButton1Click:Connect(function()
-    print("Soco ativado!")
-    punch()  -- Inicia o processo de dar o soco
+    print("Ativando a matança de NPCs!")
+    killNPCsInRange()  -- Mata todos os NPCs no raio
 end)
