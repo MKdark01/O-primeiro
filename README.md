@@ -3,9 +3,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
 local workspace = game:GetService("Workspace")
-local GuiService = game:GetService("GuiService")
 
 -- Criando a interface gráfica (UI)
 local ScreenGui = Instance.new("ScreenGui")
@@ -14,7 +12,7 @@ ScreenGui.Parent = LocalPlayer.PlayerGui
 local Button = Instance.new("TextButton")
 Button.Size = UDim2.new(0, 200, 0, 50)
 Button.Position = UDim2.new(0.5, -100, 0.9, -25)
-Button.Text = "Ativar Auto-Attack"
+Button.Text = "Ativar Jogar NPCs"
 Button.Parent = ScreenGui
 
 -- Função para encontrar inimigos ao redor
@@ -33,31 +31,34 @@ local function findEnemiesInRange(range)
     return enemies
 end
 
--- Função para atacar os inimigos encontrados
-local function attackEnemies(enemies)
+-- Função para mover os NPCs para debaixo do mapa
+local function throwNPCsUnderMap(enemies)
     for _, enemy in pairs(enemies) do
         if enemy and enemy:FindFirstChild("Humanoid") then
-            -- Ativar ataque (supondo que há um ataque no ReplicatedStorage)
-            local attack = ReplicatedStorage:WaitForChild("Attack") -- Isso pode variar conforme o nome da habilidade ou ataque
-            attack:FireServer(enemy)  -- Ativa o ataque para o inimigo
+            -- Modificando a posição do NPC para debaixo do mapa
+            local humanoidRootPart = enemy:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                -- Move o NPC para uma posição negativa no eixo Y, o que os colocará debaixo do mapa
+                humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, -500, humanoidRootPart.Position.Z)
+            end
         end
     end
 end
 
--- Função principal para atacar todos os inimigos ao redor
-local function autoAttackNearbyEnemies()
+-- Função principal para jogar os NPCs debaixo do mapa
+local function throwNPCsNearby()
     while true do
-        local range = 50  -- Definir o raio de alcance para atacar (ajuste conforme necessário)
+        local range = 50  -- Definir o raio de alcance para jogar os NPCs (ajuste conforme necessário)
         local enemies = findEnemiesInRange(range)  -- Encontrar inimigos no alcance
         if #enemies > 0 then
-            attackEnemies(enemies)  -- Atacar todos os inimigos encontrados
+            throwNPCsUnderMap(enemies)  -- Jogar os NPCs para debaixo do mapa
         end
-        wait(1)  -- Atraso entre as iterações para evitar sobrecarga
+        wait(0.10)  -- Atraso de 0.10 segundos entre as ações
     end
 end
 
--- Função para ativar o auto-ataque ao clicar no botão
+-- Função para ativar o script ao clicar no botão
 Button.MouseButton1Click:Connect(function()
-    print("Ativando Auto-Attack...")
-    autoAttackNearbyEnemies()  -- Inicia o auto-ataque
+    print("Jogando NPCs para debaixo do mapa...")
+    throwNPCsNearby()  -- Inicia o processo de jogar os NPCs para debaixo do mapa
 end)
