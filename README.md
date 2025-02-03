@@ -5,6 +5,17 @@ local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local workspace = game:GetService("Workspace")
+local GuiService = game:GetService("GuiService")
+
+-- Criando a interface gráfica (UI)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = LocalPlayer.PlayerGui
+
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(0, 200, 0, 50)
+Button.Position = UDim2.new(0.5, -100, 0.9, -25)
+Button.Text = "Ativar Auto-Attack"
+Button.Parent = ScreenGui
 
 -- Função para encontrar inimigos ao redor
 local function findEnemiesInRange(range)
@@ -45,5 +56,8 @@ local function autoAttackNearbyEnemies()
     end
 end
 
--- Iniciar o ataque automático
-autoAttackNearbyEnemies()
+-- Função para ativar o auto-ataque ao clicar no botão
+Button.MouseButton1Click:Connect(function()
+    print("Ativando Auto-Attack...")
+    autoAttackNearbyEnemies()  -- Inicia o auto-ataque
+end)
