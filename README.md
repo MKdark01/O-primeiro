@@ -12,53 +12,46 @@ ScreenGui.Parent = LocalPlayer.PlayerGui
 local Button = Instance.new("TextButton")
 Button.Size = UDim2.new(0, 200, 0, 50)
 Button.Position = UDim2.new(0.5, -100, 0.9, -25)
-Button.Text = "Ativar Jogar NPCs"
+Button.Text = "Ativar Espada"
 Button.Parent = ScreenGui
 
--- Função para encontrar inimigos ao redor
-local function findEnemiesInRange(range)
-    local enemies = {}
-    -- Loop pelos inimigos no jogo
-    for _, obj in pairs(workspace.Enemies:GetChildren()) do
-        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") then
-            -- Calculando a distância entre o personagem e o inimigo
-            local distance = (Character.HumanoidRootPart.Position - obj.HumanoidRootPart.Position).Magnitude
-            if distance <= range then
-                table.insert(enemies, obj)
-            end
-        end
-    end
-    return enemies
-end
+-- Função para criar a espada
+local function equipSword()
+    -- Criar o modelo da espada (usando um simples Part)
+    local sword = Instance.new("Part")
+    sword.Size = Vector3.new(5, 1, 1)  -- Tamanho da espada
+    sword.Position = Character.HumanoidRootPart.Position + Vector3.new(0, 3, 0)  -- Posição na mão do personagem
+    sword.Anchored = false  -- Não deve ser ancorada, para poder ser manipulada
+    sword.CanCollide = false  -- Impede colisões com outros objetos
+    sword.BrickColor = BrickColor.new("Bright blue")  -- Cor da espada
+    sword.Parent = Character  -- Adiciona a espada ao personagem
 
--- Função para mover os NPCs para debaixo do mapa
-local function throwNPCsUnderMap(enemies)
-    for _, enemy in pairs(enemies) do
+    -- Criar um adesivo para a espada ficar na mão do personagem
+    local weld = Instance.new("WeldConstraint")
+    weld.Part0 = Character:WaitForChild("RightHand")  -- Mão direita do personagem
+    weld.Part1 = sword  -- Espada
+    weld.Parent = sword  -- Adiciona o weld na espada
+
+    -- Configurar a espada com um dano de 10.000
+    local swordDamage = 10000  -- Dano da espada
+
+    -- Adiciona uma função para detectar quando a espada colide com um inimigo
+    sword.Touched:Connect(function(hit)
+        local enemy = hit.Parent
         if enemy and enemy:FindFirstChild("Humanoid") then
-            -- Modificando a posição do NPC para debaixo do mapa
-            local humanoidRootPart = enemy:FindFirstChild("HumanoidRootPart")
-            if humanoidRootPart then
-                -- Move o NPC para uma posição negativa no eixo Y, o que os colocará debaixo do mapa
-                humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, -500, humanoidRootPart.Position.Z)
+            -- Aplicar dano ao inimigo
+            local humanoid = enemy:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid:TakeDamage(swordDamage)  -- Causa dano ao inimigo
             end
         end
-    end
-end
-
--- Função principal para jogar os NPCs debaixo do mapa
-local function throwNPCsNearby()
-    while true do
-        local range = 50  -- Definir o raio de alcance para jogar os NPCs (ajuste conforme necessário)
-        local enemies = findEnemiesInRange(range)  -- Encontrar inimigos no alcance
-        if #enemies > 0 then
-            throwNPCsUnderMap(enemies)  -- Jogar os NPCs para debaixo do mapa
-        end
-        wait(0.10)  -- Atraso de 0.10 segundos entre as ações
-    end
+    end)
+    
+    print("Espada equipada com dano de " .. swordDamage)
 end
 
 -- Função para ativar o script ao clicar no botão
 Button.MouseButton1Click:Connect(function()
-    print("Jogando NPCs para debaixo do mapa...")
-    throwNPCsNearby()  -- Inicia o processo de jogar os NPCs para debaixo do mapa
+    print("Espada ativada!")
+    equipSword()  -- Inicia o processo de equipar a espada no personagem
 end)
