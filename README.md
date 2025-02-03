@@ -12,46 +12,55 @@ ScreenGui.Parent = LocalPlayer.PlayerGui
 local Button = Instance.new("TextButton")
 Button.Size = UDim2.new(0, 200, 0, 50)
 Button.Position = UDim2.new(0.5, -100, 0.9, -25)
-Button.Text = "Ativar Espada"
+Button.Text = "Soco"
 Button.Parent = ScreenGui
 
--- Função para criar a espada
-local function equipSword()
-    -- Criar o modelo da espada (usando um simples Part)
-    local sword = Instance.new("Part")
-    sword.Size = Vector3.new(5, 1, 1)  -- Tamanho da espada
-    sword.Position = Character.HumanoidRootPart.Position + Vector3.new(0, 3, 0)  -- Posição na mão do personagem
-    sword.Anchored = false  -- Não deve ser ancorada, para poder ser manipulada
-    sword.CanCollide = false  -- Impede colisões com outros objetos
-    sword.BrickColor = BrickColor.new("Bright blue")  -- Cor da espada
-    sword.Parent = Character  -- Adiciona a espada ao personagem
+-- Função para dar um soco
+local function punch()
+    -- Criar uma "onda" de dano em frente ao personagem (simulando um soco)
+    local punchRange = 10  -- Distância do soco
+    local damage = 10000  -- Dano do soco
 
-    -- Criar um adesivo para a espada ficar na mão do personagem
-    local weld = Instance.new("WeldConstraint")
-    weld.Part0 = Character:WaitForChild("RightHand")  -- Mão direita do personagem
-    weld.Part1 = sword  -- Espada
-    weld.Parent = sword  -- Adiciona o weld na espada
+    -- Definir a direção e a posição do soco
+    local startPosition = Character.HumanoidRootPart.Position
+    local direction = Character.HumanoidRootPart.CFrame.LookVector
+    local endPosition = startPosition + direction * punchRange
 
-    -- Configurar a espada com um dano de 10.000
-    local swordDamage = 10000  -- Dano da espada
+    -- Criar uma parte invisível para simular o soco (pode ser uma esfera ou uma "linha")
+    local punchPart = Instance.new("Part")
+    punchPart.Size = Vector3.new(1, 1, punchRange)  -- Tamanho da "onda" do soco
+    punchPart.Position = startPosition + direction * (punchRange / 2)
+    punchPart.Anchored = true
+    punchPart.CanCollide = false
+    punchPart.Transparency = 1  -- Torna invisível
+    punchPart.Parent = workspace
 
-    -- Adiciona uma função para detectar quando a espada colide com um inimigo
-    sword.Touched:Connect(function(hit)
-        local enemy = hit.Parent
+    -- Detectar objetos dentro do alcance do soco
+    local hitObjects = workspace:FindPartsInRegion3(
+        punchPart.Position - Vector3.new(punchRange / 2, punchRange / 2, punchRange / 2),
+        punchPart.Position + Vector3.new(punchRange / 2, punchRange / 2, punchRange / 2),
+        nil
+    )
+
+    -- Aplicar dano aos inimigos no alcance
+    for _, part in pairs(hitObjects) do
+        local enemy = part.Parent
         if enemy and enemy:FindFirstChild("Humanoid") then
-            -- Aplicar dano ao inimigo
             local humanoid = enemy:FindFirstChild("Humanoid")
             if humanoid then
-                humanoid:TakeDamage(swordDamage)  -- Causa dano ao inimigo
+                humanoid:TakeDamage(damage)  -- Causa dano suficiente para matar o inimigo
             end
         end
-    end)
-    
-    print("Espada equipada com dano de " .. swordDamage)
+    end
+
+    -- Remove a parte invisível após o soco
+    punchPart:Destroy()
+
+    print("Soco dado com dano de " .. damage)
 end
 
--- Função para ativar o script ao clicar no botão
+-- Função para ativar o soco ao clicar no botão
 Button.MouseButton1Click:Connect(function()
-    print("Espada ativada!")
-    equipSword()  -- Inicia o processo de equipar a espada no personagem
+    print("Soco ativado!")
+    punch()  -- Inicia o processo de dar o soco
 end)
